@@ -1,0 +1,39 @@
+name: moodle-stress-test
+topology:
+  nodes:
+    # Nokia SRL Linux Layer 2 Device
+    srlswitch:
+      kind: nokia_srlinux
+      image: ghcr.io/nokia/srlinux:24.10.1
+      type: ixrd3
+      startup-config: configs/srlswitch.cfg
+    
+    # Servidor Moodle bajo prueba
+    moodle-server:
+      kind: linux
+      image: bitnami/moodle:latest
+      #binds:
+        #- ./scripts:/scripts
+        #- ./moodle-data:/var/www/moodle
+      #env:
+        #MOODLE_VERSION: 4.3.1
+      
+    # Cliente para stress testing
+    stress-client:
+      kind: linux
+      image: docker.io/esanchezv/ubuntu2204:latest
+      #binds:
+        #- ./scripts:/scripts
+        #- ./test-results:/results
+
+    # Nodo de monitorización
+    monitor:
+      kind: linux
+      image: docker.io/esanchezv/ubuntu2204:latest
+      #binds:
+        #- ./monitor:/monitor
+
+  links:
+    - endpoints: ["srlswitch:e1-1", "moodle-server:eth1"]
+    - endpoints: ["srlswitch:e1-2", "stress-client:eth1"]  
+    - endpoints: ["srlswitch:e1-3", "monitor:eth1"]
